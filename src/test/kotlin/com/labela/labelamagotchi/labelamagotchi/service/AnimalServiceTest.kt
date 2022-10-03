@@ -25,11 +25,21 @@ internal class AnimalServiceTest {
     fun `should call its data source to retrieve animal with id`() {
         // given
         val id = 3
+
         // when
         animalService.getAnimal(id)
 
         // then
         verify(exactly = 1) { dataSource.retrieveAnimal(id) }
+    }
+
+    @Test
+    fun `should call its data source to retrieve current active animal`() {
+        // when
+        animalService.getActiveAnimal()
+
+        // then
+        verify(exactly = 1) { dataSource.retrieveActiveAnimal() }
     }
 
     @Test

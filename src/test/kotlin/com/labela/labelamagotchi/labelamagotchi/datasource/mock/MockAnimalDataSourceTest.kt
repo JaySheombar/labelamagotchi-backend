@@ -1,5 +1,6 @@
 package com.labela.labelamagotchi.labelamagotchi.datasource.mock
 
+import com.labela.labelamagotchi.labelamagotchi.model.animal.AnimalStage
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -62,5 +63,14 @@ internal class MockAnimalDataSourceTest {
         assertThrows<NoSuchElementException> {
             mockAnimalDataSource.retrieveAnimal(id)
         }
+    }
+
+    @Test
+    fun `should provide active animal`() {
+        // when
+        val animal = mockAnimalDataSource.retrieveActiveAnimal()
+
+        // then
+        assertThat(animal.stage).isNotEqualTo(AnimalStage.DECEASED)
     }
 }

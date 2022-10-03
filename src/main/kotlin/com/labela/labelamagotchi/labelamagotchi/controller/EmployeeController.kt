@@ -1,14 +1,14 @@
 package com.labela.labelamagotchi.labelamagotchi.controller
 
-import com.labela.labelamagotchi.labelamagotchi.model.animal.Animal
-import com.labela.labelamagotchi.labelamagotchi.service.AnimalService
+import com.labela.labelamagotchi.labelamagotchi.model.employee.Employee
+import com.labela.labelamagotchi.labelamagotchi.service.EmployeeService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("api/animals")
-class AnimalController(private val service: AnimalService) {
+@RequestMapping("api/employees")
+class EmployeeController(private val service: EmployeeService) {
 
     @ExceptionHandler(NoSuchElementException::class)
     fun handleNotFound(e: NoSuchElementException): ResponseEntity<String> {
@@ -21,22 +21,19 @@ class AnimalController(private val service: AnimalService) {
     }
 
     @GetMapping
-    fun getAnimals(): Collection<Animal> = service.getAnimals()
+    fun getEmployees(): Collection<Employee> = service.getEmployees()
 
     @GetMapping("/{id}")
-    fun getAnimal(@PathVariable id: Int): Animal = service.getAnimal(id)
-
-    @GetMapping("/active")
-    fun getAnimal(): Animal = service.getActiveAnimal()
+    fun getEmployee(@PathVariable id: Int): Employee = service.getEmployee(id)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun addAnimal(@RequestBody animal: Animal): Animal = service.addAnimal(animal)
+    fun addEmployee(@RequestBody employee: Employee): Employee = service.addEmployee(employee)
 
     @PatchMapping
-    fun updateBank(@RequestBody animal: Animal): Animal = service.updateAnimal(animal)
+    fun updateEmployee(@RequestBody employee: Employee): Employee = service.updateEmployee(employee)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun deleteBank(@PathVariable id: Int) = service.deleteAnimal(id)
+    fun deleteEmployee(@PathVariable id: Int) = service.deleteEmployee(id)
 }

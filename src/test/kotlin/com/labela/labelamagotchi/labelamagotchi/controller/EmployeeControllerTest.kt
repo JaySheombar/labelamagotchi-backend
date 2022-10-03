@@ -1,69 +1,60 @@
 package com.labela.labelamagotchi.labelamagotchi.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.labela.labelamagotchi.labelamagotchi.model.animal.Animal
-import com.labela.labelamagotchi.labelamagotchi.model.animal.AnimalStage
 import com.labela.labelamagotchi.labelamagotchi.model.employee.Employee
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.*
-import java.time.LocalDateTime
 
 @SpringBootTest
 @AutoConfigureMockMvc
-internal class AnimalControllerTest @Autowired constructor(
-    val mockMvc: MockMvc,
-    val objectMapper: ObjectMapper,
-) {
-    private val baseUrl = "/api/animals"
-
-    private val spawnDateTime = LocalDateTime.of(2022, 6, 1, 0, 0, 0, 0)
+internal class EmployeeControllerTest @Autowired constructor(val mockMvc: MockMvc, val objectMapper: ObjectMapper) {
+    private val baseUrl = "/api/employees"
 
     @Nested
-    @DisplayName("GET /api/animals")
-    @TestInstance(Lifecycle.PER_CLASS)
-    inner class GetAnimals {
+    @DisplayName("GET /api/employees")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class GetEmployees {
 
         @Test
-        fun `should return all animals`() {
+        fun `should return all employees`() {
             // when/then
             mockMvc.get(baseUrl)
                 .andDo { print() }
                 .andExpect {
                     status { isOk() }
                     content { contentType(MediaType.APPLICATION_JSON) }
-                    jsonPath("$[0].stage") { value("${AnimalStage.DECEASED}") }
+                    jsonPath("$[0].name") { value("Agung") }
                     jsonPath("$[1].id") { value("2") }
                 }
         }
     }
 
     @Nested
-    @DisplayName("GET /api/animals/{id}")
-    @TestInstance(Lifecycle.PER_CLASS)
-    inner class GetAnimal {
+    @DisplayName("GET /api/employees/{id}")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class GetEmployee {
 
         @Test
-        fun `should return the animal with the given id`() {
+        fun `should return the employee with the given id`() {
             // given
-            val animal = Animal(id = 3, name = Employee(32, "Mike"), spawnDateTime = spawnDateTime)
+            val employee = Employee(id = 2, name = "Alain")
 
             // when/then
-            mockMvc.get("$baseUrl/${animal.id}")
+            mockMvc.get("$baseUrl/${employee.id}")
                 .andDo { print() }
                 .andExpect {
                     status { isOk() }
                     content {
                         contentType(MediaType.APPLICATION_JSON)
-                        json(objectMapper.writeValueAsString(animal))
+                        json(objectMapper.writeValueAsString(employee))
                     }
                 }
         }
@@ -81,65 +72,56 @@ internal class AnimalControllerTest @Autowired constructor(
     }
 
     @Nested
-    @DisplayName("GET /api/animals/active")
-    @TestInstance(Lifecycle.PER_CLASS)
-    inner class GetActiveAnimal {
-        @Test
-        fun `should return current active animal`() {
-            // given
-            val animal = Animal(
-                id = 4,
-                name = Employee(45, "Shingfei"),
-                spawnDateTime = LocalDateTime.of(2022, 10, 1, 0, 0, 0, 0)
-            )
-
-            // when/then
-            mockMvc.get("$baseUrl/active")
-                .andDo { print() }
-                .andExpect {
-                    status { isOk() }
-                    content {
-                        contentType(MediaType.APPLICATION_JSON)
-                        json(objectMapper.writeValueAsString(animal))
-                    }
-                }
-        }
-    }
-
-    @Nested
-    @DisplayName("POST /api/animals")
-    @TestInstance(Lifecycle.PER_CLASS)
-    inner class PostNewAnimal {
+    @DisplayName("POST /api/employees")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class PostNewEmployee {
 
         @Test
         @DirtiesContext
-        fun `should add new animal`() {
+        fun `should add new employee`() {
             // given
-            val newAnimal = Animal(spawnDateTime = spawnDateTime)
+            val newEmployee = Employee(0, "Iris")
 
             // when
             val performPost = mockMvc.post(baseUrl) {
                 contentType = MediaType.APPLICATION_JSON
-                content = objectMapper.writeValueAsString(newAnimal)
+                content = objectMapper.writeValueAsString(newEmployee)
             }
 
             // then
-            val incrementedId = 5
-            val addedAnimal = newAnimal.copy(id = incrementedId)
+            val incrementedId = 57
+            val addedEmployee = newEmployee.copy(id = incrementedId)
             performPost
                 .andDo { print() }
                 .andExpect {
                     status { isCreated() }
                     content {
                         contentType(MediaType.APPLICATION_JSON)
-                        json(objectMapper.writeValueAsString(addedAnimal))
+                        json(objectMapper.writeValueAsString(addedEmployee))
                     }
                 }
 
             mockMvc.get("$baseUrl/$incrementedId")
                 .andExpect {
-                    content { json(objectMapper.writeValueAsString(addedAnimal)) }
+                    content { json(objectMapper.writeValueAsString(addedEmployee)) }
                 }
+        }
+
+        @Test
+        fun `should return BAD REQUEST if duplicate employee`() {
+            // given
+            val duplicateEmployee = Employee(id = 1, name = "Agung")
+
+            // when
+            val performPost = mockMvc.post(baseUrl) {
+                contentType = MediaType.APPLICATION_JSON
+                content = duplicateEmployee
+            }
+
+            // then
+            performPost
+                .andDo { print() }
+                .andExpect { status { isBadRequest() } }
         }
 
         @Test
@@ -161,24 +143,20 @@ internal class AnimalControllerTest @Autowired constructor(
     }
 
     @Nested
-    @DisplayName("PATCH /api/animals")
-    @TestInstance(Lifecycle.PER_CLASS)
-    inner class PatchExistingAnimal {
+    @DisplayName("PATCH /api/employees")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class PatchExistingEmployee {
 
         @Test
         @DirtiesContext
-        fun `should update an existing animal`() {
+        fun `should update an existing employee`() {
             // given
-            val updatedAnimal = Animal(
-                id = 3,
-                spawnDateTime = spawnDateTime,
-                stage = AnimalStage.DECEASED,
-            )
+            val updatedEmployee = Employee(id = 1, name = "updated employee name")
 
             // when
             val performPatch = mockMvc.patch(baseUrl) {
                 contentType = MediaType.APPLICATION_JSON
-                content = objectMapper.writeValueAsString(updatedAnimal)
+                content = objectMapper.writeValueAsString(updatedEmployee)
             }
 
             // then
@@ -188,26 +166,43 @@ internal class AnimalControllerTest @Autowired constructor(
                     status { isOk() }
                     content {
                         contentType(MediaType.APPLICATION_JSON)
-                        json(objectMapper.writeValueAsString(updatedAnimal))
+                        json(objectMapper.writeValueAsString(updatedEmployee))
                     }
                 }
 
             mockMvc
-                .get("$baseUrl/${updatedAnimal.id}")
+                .get("$baseUrl/${updatedEmployee.id}")
                 .andExpect {
-                    content { json(objectMapper.writeValueAsString(updatedAnimal)) }
+                    content { json(objectMapper.writeValueAsString(updatedEmployee)) }
                 }
         }
 
         @Test
-        fun `should return BAD REQUEST if no bank with given account number exists`() {
+        fun `should return BAD REQUEST if employee with given name already exists`() {
             // given
-            val invalidAnimal = Animal(id = -1, spawnDateTime = spawnDateTime)
+            val duplicateEmployee = Employee(id = 1, name = "Agung")
 
             // when
             val performPatch = mockMvc.patch(baseUrl) {
                 contentType = MediaType.APPLICATION_JSON
-                content = objectMapper.writeValueAsString(invalidAnimal)
+                content = objectMapper.writeValueAsString(duplicateEmployee)
+            }
+
+            // then
+            performPatch
+                .andDo { print() }
+                .andExpect { status { isBadRequest() } }
+        }
+
+        @Test
+        fun `should return NOT FOUND if no employee with given account number exists`() {
+            // given
+            val invalidEmployee = Employee(id = -1, name = "invalid employee")
+
+            // when
+            val performPatch = mockMvc.patch(baseUrl) {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(invalidEmployee)
             }
 
             // then
@@ -218,34 +213,34 @@ internal class AnimalControllerTest @Autowired constructor(
     }
 
     @Nested
-    @DisplayName("DELETE /api/animals/{id}")
-    @TestInstance(Lifecycle.PER_CLASS)
-    inner class DeleteExistingAnimal {
+    @DisplayName("DELETE /api/employees/{id}")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class DeleteExistingEmployee {
 
         @Test
         @DirtiesContext
-        fun `should delete the animal with the given id`() {
+        fun `should delete the employee with the given id`() {
             // given
-            val accountNumber = 1
+            val id = 1
 
             // when/then
             mockMvc
-                .delete("$baseUrl/$accountNumber")
+                .delete("$baseUrl/$id")
                 .andDo { print() }
                 .andExpect { status { isNoContent() } }
 
             mockMvc
-                .get("$baseUrl/$accountNumber")
+                .get("$baseUrl/$id")
                 .andExpect { status { isNotFound() } }
         }
 
         @Test
         fun `should return NOT FOUND if no bank with given account name number exists`() {
             // given
-            val invalidAccountNumber = -1
+            val invalidId = -1
 
             // when/then
-            mockMvc.delete("$baseUrl/$invalidAccountNumber")
+            mockMvc.delete("$baseUrl/$invalidId")
                 .andDo { print() }
                 .andExpect { status { isNotFound() } }
         }
