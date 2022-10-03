@@ -66,6 +66,15 @@ internal class MockEmployeeDataSourceTest {
     }
 
     @Test
+    fun `should throw error when updating employee given duplicate name`() {
+        // given
+        val duplicateEmployee = Employee(56, "Rick")
+
+        // when/then
+        assertThrows<IllegalArgumentException> { mockEmployeeDataSource.updateEmployee(duplicateEmployee) }
+    }
+
+    @Test
     fun `should provide an employee with given id`() {
         // given
         val id = 3

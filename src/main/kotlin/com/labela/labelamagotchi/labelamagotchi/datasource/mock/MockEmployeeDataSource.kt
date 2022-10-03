@@ -75,11 +75,7 @@ class MockEmployeeDataSource : EmployeeDataSource {
         ?: throw NoSuchElementException("Could not find an employee with id: $id")
 
     override fun addEmployee(employee: Employee): Employee {
-        val alreadyExists = employees
-            .map { it.name }
-            .contains(employee.name)
-
-        if (alreadyExists) throw IllegalArgumentException("Employee already exists")
+        if (employees contains employee) throw IllegalArgumentException("Employee already exists")
 
         val id = employees.maxOf { it.id }
         val newId = id + 1
@@ -91,11 +87,7 @@ class MockEmployeeDataSource : EmployeeDataSource {
     }
 
     override fun updateEmployee(employee: Employee): Employee {
-        val alreadyExists = employees
-            .map { it.name }
-            .contains(employee.name)
-
-        if (alreadyExists) throw IllegalArgumentException("Employee already exists")
+        if (employees contains employee) throw IllegalArgumentException("Employee already exists")
 
         val currentEmployee = employees
             .firstOrNull { it.id == employee.id }
@@ -109,9 +101,13 @@ class MockEmployeeDataSource : EmployeeDataSource {
 
     override fun deleteEmployee(id: Int) {
         val currentEmployee = employees
-            .firstOrNull { it.id == id}
+            .firstOrNull { it.id == id }
             ?: throw NoSuchElementException("Could not find employee with id: $id")
 
         employees.remove(currentEmployee)
     }
+
+    private infix fun MutableList<Employee>.contains(employee: Employee): Boolean = this
+        .map { it.name }
+        .contains(employee.name)
 }
